@@ -23,7 +23,7 @@
 
 #include <sidekiq/sidekiq_source_s.h>
 #include <sidekiq/sidekiq_defs.h>
-#include "sidekiq.h"
+#include "sidekiq_rx.h"
 
 namespace gr {
   namespace sidekiq {
@@ -34,7 +34,7 @@ namespace gr {
     class sidekiq_source_s_impl : public sidekiq_source_s
     {
     private:
-	boost::scoped_ptr<sidekiq> rcv;
+	boost::scoped_ptr<sidekiq_rx> rcv;
 
     public:
 	sidekiq_source_s_impl(const std::string ip_adress, uint32_t port);

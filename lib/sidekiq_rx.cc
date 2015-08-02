@@ -21,7 +21,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include "sidekiq.h"
+#include "sidekiq_rx.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -68,7 +68,7 @@ namespace gr {
 #define RX_GAIN_MAX       76
 #define RX_GAIN_RESOLUTION 1
 
-sidekiq::sidekiq(const char* addr, unsigned short port)
+sidekiq_rx::sidekiq_rx(const char* addr, unsigned short port)
 {
     struct timeval tv;
     tv.tv_sec = 10;
@@ -117,15 +117,15 @@ sidekiq::sidekiq(const char* addr, unsigned short port)
     open_srfs();
 }
 
-sidekiq::~sidekiq()
+sidekiq_rx::~sidekiq_rx()
 {
-    sidekiq::stop();
+    sidekiq_rx::stop();
     close_srfs();
     close(d_sock);
 }
 
 void
-sidekiq::init_srfs_params(void)
+sidekiq_rx::init_srfs_params(void)
 {
     // frequency
     add_srfs_param( "frequency",
@@ -165,13 +165,13 @@ sidekiq::init_srfs_params(void)
 }
 
 void 
-sidekiq::add_srfs_param( const std::string token,
-			 srfs::SRFS_DATATYPES data_type,
-			 void *p_value,
-			 int64_t min_value,
-			 int64_t max_value,
-			 float resolution,
-			 const std::string *p_strings )
+sidekiq_rx::add_srfs_param( const std::string token,
+                            srfs::SRFS_DATATYPES data_type,
+                            void *p_value,
+                            int64_t min_value,
+                            int64_t max_value,
+                            float resolution,
+                            const std::string *p_strings )
 {
     srfs::srfs_param_t param;
 
@@ -186,7 +186,7 @@ sidekiq::add_srfs_param( const std::string token,
 }
 
 void
-sidekiq::set_param( const std::string token, void *pValue )
+sidekiq_rx::set_param( const std::string token, void *pValue )
 {
     param_map::iterator iter;
 
@@ -207,59 +207,59 @@ sidekiq::set_param( const std::string token, void *pValue )
 }
 
 uint64_t
-sidekiq::set_center_freq(uint64_t rx_freq)
+sidekiq_rx::set_center_freq(uint64_t rx_freq)
 {
     set_param( "frequency", &rx_freq );
     return d_rx_freq;
 }
 
 uint64_t
-sidekiq::center_freq(void)
+sidekiq_rx::center_freq(void)
 {
     return d_rx_freq;
 }
 
 uint32_t
-sidekiq::set_sample_rate(uint32_t rx_sample_rate)
+sidekiq_rx::set_sample_rate(uint32_t rx_sample_rate)
 {
     set_param("sample_rate", &rx_sample_rate);
     return d_rx_sample_rate;
 }
 
 uint32_t
-sidekiq::sample_rate(void)
+sidekiq_rx::sample_rate(void)
 {
     return d_rx_sample_rate;
 }
 	    
 uint8_t 
-sidekiq::set_rx_gain(uint8_t gain)
+sidekiq_rx::set_rx_gain(uint8_t gain)
 {
     set_param("rx_gain", &gain);
     return d_rx_gain;
 }
 
 uint8_t 
-sidekiq::rx_gain(void)
+sidekiq_rx::rx_gain(void)
 {
     return d_rx_gain;
 }
 	    
 GAIN_MODE 
-sidekiq::set_rx_gain_mode(GAIN_MODE mode)
+sidekiq_rx::set_rx_gain_mode(GAIN_MODE mode)
 {
     set_param("gain_mode", &mode);
     return d_rx_gain_mode;
 }
 
 GAIN_MODE 
-sidekiq::rx_gain_mode(void)
+sidekiq_rx::rx_gain_mode(void)
 {
     return d_rx_gain_mode;
 }
 
 void 
-sidekiq::open_srfs()
+sidekiq_rx::open_srfs()
 {
     char cmd[1024];
     char rcv[1024];
@@ -314,7 +314,7 @@ sidekiq::open_srfs()
 }
 
 void 
-sidekiq::start()
+sidekiq_rx::start()
 {
     char cmd[1024];
     char rcv[1024];
@@ -359,7 +359,7 @@ sidekiq::start()
 }
 
 void 
-sidekiq::close_srfs()
+sidekiq_rx::close_srfs()
 {
     char cmd[1024];
     char rcv[1024];
@@ -378,7 +378,7 @@ sidekiq::close_srfs()
 }
 
 void 
-sidekiq::stop()
+sidekiq_rx::stop()
 {
     char cmd[1024];
     char rcv[1024];
@@ -418,7 +418,7 @@ sidekiq::stop()
 }
 
 void 
-sidekiq::send_msg( char * cmd )
+sidekiq_rx::send_msg( char * cmd )
 {
     int flags = 0;
     if (DEBUG_SIDEKIQ) {
@@ -432,7 +432,7 @@ sidekiq::send_msg( char * cmd )
 }
 
 int 
-sidekiq::receive_msg( char * rcv, int size )
+sidekiq_rx::receive_msg( char * rcv, int size )
 {
     int flags = 0;
     int num_bytes;
@@ -455,7 +455,7 @@ sidekiq::receive_msg( char * rcv, int size )
 }    
     
 void 
-sidekiq::config_src()
+sidekiq_rx::config_src()
 {
     char cmd[1024];
     char rcv[1024];
@@ -528,7 +528,7 @@ sidekiq::config_src()
 }
 
 int 
-sidekiq::read(char* buf, int size)
+sidekiq_rx::read(char* buf, int size)
 {
     static char data[BUF_SIZE];
     static uint32_t dataIndex=BUF_SIZE;  // initialize to max, forcing data retrieval

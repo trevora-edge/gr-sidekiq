@@ -48,7 +48,7 @@ namespace gr {
 			   gr::io_signature::make(0, 0, 0),
 			   gr::io_signature::make(1, 1, sizeof(short)))
       {
-	  rcv.reset( new sidekiq(ip_address.c_str(), port) );
+	  rcv.reset( new sidekiq_rx(ip_address.c_str(), port) );
 	  set_output_multiple(SIDEKIQ_SAMPLES_PER_PACKET*2);
       }
 

@@ -45,8 +45,8 @@ namespace gr {
       sidekiq_sink_s_impl::sidekiq_sink_s_impl(const std::string ip_address,
                                                uint32_t port)
 	  : gr::sync_block("sidekiq_tx",
-			   gr::io_signature::make(0, 0, 0),
-			   gr::io_signature::make(1, 1, sizeof(short)))
+			   gr::io_signature::make(1, 1, sizeof(short)),
+                           gr::io_signature::make(0, 0, 0))
       {
 	  //rcv.reset( new sidekiq_sink(ip_address.c_str(), port) );
 	  //set_input_multiple(SIDEKIQ_SAMPLES_PER_PACKET*2);

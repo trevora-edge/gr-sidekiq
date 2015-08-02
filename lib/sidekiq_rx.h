@@ -18,8 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SIDEKIQ_H
-#define SIDEKIQ_H
+#ifndef SIDEKIQ_RX_H
+#define SIDEKIQ_RX_H
 
 #include <sidekiq/sidekiq_defs.h>
 #include <boost/scoped_ptr.hpp>
@@ -48,7 +48,7 @@ namespace gr {
 	};
 
 	/*! Implements interface to sidekiq */
-	class sidekiq {
+	class sidekiq_rx {
 	    
 	public:
 	    
@@ -57,8 +57,8 @@ namespace gr {
 		STATE_STOPPED, STATE_STARTED,
 	    };
 	    
-	    sidekiq(const char* ip_addr, unsigned short port);
-	    ~sidekiq();
+	    sidekiq_rx(const char* ip_addr, unsigned short port);
+	    ~sidekiq_rx();
 
 	    void start();
 	    void stop();
