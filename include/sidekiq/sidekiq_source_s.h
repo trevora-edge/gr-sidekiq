@@ -143,6 +143,41 @@ namespace gr {
 
     };
 
+    class SIDEKIQ_API sidekiq_sink_s : virtual public gr::sync_block
+    {
+     public:
+      typedef boost::shared_ptr<sidekiq_sink_s> sptr;
+
+      /*!
+       * \brief Return a shared_ptr to a new instance of sidekiq::sidekiq.
+       *
+       * To avoid accidental use of raw pointers, sidekiq::sidekiq's
+       * constructor is in a private implementation
+       * class. sidekiq::sidekiq::make is the public interface for
+       * creating new instances.
+       */
+      static sptr make(const std::string ip_address, uint32_t port);
+
+       /*! 
+	* \brief Set center frequency with Hz resolution.
+	* \param freq The frequency in Hz
+	* \return the actual center frequency
+	*
+	* Set the center frequency of the Sidekiq.
+	*/
+       virtual uint64_t set_center_freq(uint64_t freq) = 0;
+
+       /*! 
+	* \brief Set frequency with Hz resolution.
+	* \param freq The frequency in Hz
+	* \return the actual center frequency
+	*
+	* Convenience function that uses float parameter to all 
+	* engineering notation to be used in GRC.
+	*/
+       virtual uint64_t set_center_freq(float freq) = 0;
+    };
+
   } // namespace sidekiq
 } // namespace gr
 

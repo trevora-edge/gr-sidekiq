@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<block>
+  <name>sidekiq_sink_s</name>
+  <key>sidekiq_sink_s</key>
+  <category>Sinks</category>
+  <throttle>1</throttle>
+  <import>import sidekiq</import>
+  <make>sidekiq.sidekiq_sink_s($ip_address, $port)
+self.$(id).set_center_freq($freq)
+  </make>
+
+  <callback>set_center_freq($freq)</callback>
+
+  <param>
+    <name>Sidekiq IP Address</name>
+    <key>ip_address</key>
+    <value>"127.0.0.1"</value>
+    <type>string</type>
+  </param>
+  <param>
+    <name>Sidekiq Port</name>
+    <key>port</key>
+    <value>7737</value>
+    <type>int</type>
+  </param>
+  <param>
+    <name>Frequency (Hz)</name>
+    <key>freq</key>
+    <value>800000000</value>
+    <type>real</type>
+  </param>
+
+  <check>($freq &gt;= 47e6) and ($freq &lt;= 6000e6)</check>
+
+  <sink>
+    <name>in</name>
+    <type>short</type>
+  </sink>
+
+  <doc>
+    This block supports using the Sidekiq as a sink block.
+
+    * Frequency:
+       The center frequency in Hz
+
+  </doc>
+
+</block>
