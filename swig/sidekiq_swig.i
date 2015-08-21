@@ -15,3 +15,4 @@
 
 %include "sidekiq/sidekiq_source_s.h"
 GR_SWIG_BLOCK_MAGIC2(sidekiq, sidekiq_source_s);
+GR_SWIG_BLOCK_MAGIC2(sidekiq, sidekiq_sink_s);

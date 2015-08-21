@@ -18,5 +18,5 @@
 # Boston, MA 02110-1301, USA.
 
 install(FILES
-    sidekiq_source_s.xml DESTINATION share/gnuradio/grc/blocks
+    sidekiq_source_s.xml sidekiq_sink_s.xml DESTINATION share/gnuradio/grc/blocks
 )
