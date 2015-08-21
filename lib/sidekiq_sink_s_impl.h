@@ -1,8 +1,9 @@
+
 /* -*- c++ -*- */
 /* 
  * Copyright 2013 <+YOU OR YOUR COMPANY+>.
  * 
- * This is free software; you can redistribute it and/or modify
+b * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3, or (at your option)
  * any later version.
@@ -21,7 +22,7 @@
 #ifndef INCLUDED_SIDEKIQ_SINK_IMPL_H
 #define INCLUDED_SIDEKIQ_SINK_IMPL_H
 
-#include <sidekiq/sidekiq_class.h>
+#include <sidekiq/sidekiq_source_s.h>
 #include <sidekiq/sidekiq_defs.h>
 //#include "sidekiq_tx.h"
 
