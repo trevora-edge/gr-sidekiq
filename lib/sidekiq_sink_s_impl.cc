@@ -49,6 +49,8 @@ namespace gr {
                            gr::io_signature::make(0, 0, 0))
       {
 	  tx.reset( new sidekiq_tx(ip_address.c_str(), port) );
+
+          // TODO: add this in!!...probably should be block size
 	  //set_input_multiple(SIDEKIQ_SAMPLES_PER_PACKET*2);
 
           std::stringstream str;
@@ -92,7 +94,7 @@ namespace gr {
           int ninput_items = noutput_items;
           const int16_t* in = reinterpret_cast<const int16_t *>(input_items[0]);
 
-          printf("input %d\r\n", ninput_items);
+          //printf("input %d\r\n", ninput_items);
 
 #if 0
           // TODO: super dumb but it won't compile...
@@ -105,9 +107,9 @@ namespace gr {
               printf("data %d %d\r\n", data[(i*2)], data[(i*2)+1]);
           }
 #endif
-          printf("done copying\r\n");
+          //printf("done copying\r\n");
           tx->transmit( (const int16_t*)(in), ninput_items );
-          printf("transmit done\r\n");
+          //printf("transmit done\r\n");
 
           return (ninput_items);
       }

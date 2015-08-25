@@ -60,7 +60,7 @@ namespace gr {
 #define PKT_SIZE (40960*5) 
 #define NUM_SAMPLES (PKT_SIZE/sizeof(uint32_t))
 
-#define NUM_RECV_ATTEMPTS (3)
+#define NUM_RECV_ATTEMPTS (10)//(3)
 
 #define FREQUENCY_MIN  47000000ULL
 #define FREQUENCY_MAX 6000000000ULL
