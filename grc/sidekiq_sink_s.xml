@@ -20,7 +20,7 @@ self.$(id).set_center_freq($freq)
   <param>
     <name>Sidekiq Port</name>
     <key>port</key>
-    <value>7737</value>
+    <value>7000</value>
     <type>int</type>
   </param>
   <param>

@@ -24,7 +24,7 @@ b * This is free software; you can redistribute it and/or modify
 
 #include <sidekiq/sidekiq_source_s.h>
 #include <sidekiq/sidekiq_defs.h>
-//#include "sidekiq_tx.h"
+#include "sidekiq_tx.h"
 
 namespace gr {
   namespace sidekiq {
@@ -35,7 +35,8 @@ namespace gr {
     class sidekiq_sink_s_impl : public sidekiq_sink_s
     {
     private:
-	//boost::scoped_ptr<sidekiq_tx> tx;
+	boost::scoped_ptr<sidekiq_tx> tx;
+        pmt::pmt_t _id;
 
     public:
 	sidekiq_sink_s_impl(const std::string ip_adress, uint32_t port);

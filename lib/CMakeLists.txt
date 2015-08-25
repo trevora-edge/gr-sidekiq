@@ -29,6 +29,7 @@ list(APPEND sidekiq_sources
     sidekiq_source_s_impl.cc
     sidekiq_sink_s_impl.cc
     sidekiq_rx.cc
+    sidekiq_tx.cc
     srfs_interface.cc
 )
 

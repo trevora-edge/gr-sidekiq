@@ -48,6 +48,13 @@ namespace gr {
 			   gr::io_signature::make(1, 1, sizeof(short)),
                            gr::io_signature::make(0, 0, 0))
       {
+	  tx.reset( new sidekiq_tx(ip_address.c_str(), port) );
+	  //set_input_multiple(SIDEKIQ_SAMPLES_PER_PACKET*2);
+
+          std::stringstream str;
+          str << name() << "_" << unique_id();
+          _id = pmt::string_to_symbol(str.str());
+
 	  //rcv.reset( new sidekiq_sink(ip_address.c_str(), port) );
 	  //set_input_multiple(SIDEKIQ_SAMPLES_PER_PACKET*2);
       }
@@ -62,22 +69,19 @@ namespace gr {
       uint64_t 
       sidekiq_sink_s_impl::set_center_freq(uint64_t freq)
       {
-	  //return (rcv->set_center_freq(freq));
-          return (0);
+	  return (tx->set_center_freq(freq));
       }
 
       uint64_t 
       sidekiq_sink_s_impl::set_center_freq(float freq)
       {
-	  //return (rcv->set_center_freq(freq));
-          return (0);
+	  return (tx->set_center_freq(freq));
       }
 
       uint64_t 
       sidekiq_sink_s_impl::center_freq(void)
       {
-	  //return (rcv->center_freq());
-          return (0);
+	  return (tx->center_freq());
       }
 
       int
@@ -85,8 +89,27 @@ namespace gr {
 				  gr_vector_const_void_star &input_items,
 				  gr_vector_void_star &output_items)
       {
-          // TODO
-          return (0);
+          int ninput_items = noutput_items;
+          const int16_t* in = reinterpret_cast<const int16_t *>(input_items[0]);
+
+          printf("input %d\r\n", ninput_items);
+
+#if 0
+          // TODO: super dumb but it won't compile...
+          printf("copying...\r\n");
+          for( uint32_t i=0; i<ninput_items; i++ )
+          {
+              printf("i is %u\r\n", i);
+              data[(i*2)] = (int16_t)(output_items[i]);
+              data[(i*2)+1] = *(int16_t*)(output_items[i]);
+              printf("data %d %d\r\n", data[(i*2)], data[(i*2)+1]);
+          }
+#endif
+          printf("done copying\r\n");
+          tx->transmit( (const int16_t*)(in), ninput_items );
+          printf("transmit done\r\n");
+
+          return (ninput_items);
       }
 
   } /* namespace sidekiq */
