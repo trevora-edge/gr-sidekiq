@@ -203,6 +203,80 @@ namespace gr {
 	* engineering notation to be used in GRC.
 	*/
        virtual uint64_t set_center_freq(float freq) = 0;
+
+       /*! 
+	* \brief Set the sample rate
+	* \param sample_rate The sample rate
+	* \return the actual sample rate
+	*
+	* Set the sample rate of the Sidekiq. To calculate the rate 
+	* of samples delivered, the decimation stage needs to be
+	* factored in.
+	*/
+       virtual uint32_t set_sample_rate(uint32_t sample_rate) = 0;
+
+       /*! 
+	* \brief Set the sample rate
+	* \param sample_rate The sample rate
+	* \return the actual sample rate
+	*
+	* Convenience function that uses float parameter to all engineering
+	* notation to be used in GRC.
+	*/
+       virtual uint32_t set_sample_rate(float sample_rate) = 0;
+
+       /*! 
+	* \brief Get the sample rate
+	* \return the actual sample rate
+	*
+	* Get the sample rate of the Sidekiq. To calculate
+	* the rate of samples delivered, the decimation stage needs to be
+	* factored in.
+	*/
+       virtual uint32_t sample_rate(void) = 0;
+
+       /*! 
+	* \brief Set the bandwidth
+	* \param bandwidth The channel bandwidth
+	* \return the actual bandwidth
+	*
+	* Set the channel bandwidth of the Sidekiq. 
+	*/
+       virtual uint32_t set_bandwidth(uint32_t bandwidth) = 0;
+
+       /*! 
+	* \brief Set the bandwidth
+	* \param bandwidth The channel bandwidth
+	* \return the actual bandwidth
+	*
+	* Convenience function that uses float parameter to all engineering
+	* notation to be used in GRC.
+	*/
+       virtual uint32_t set_bandwidth(float bandwidth) = 0;
+
+       /*! 
+	* \brief Get the channel bandwidth
+	* \return the actual channel bandwidth
+	*
+	* Get the channel bandwidth of the Sidekiq. 
+	*/
+       virtual uint32_t bandwidth(void) = 0;
+
+       /*! 
+	* \brief Set the Tx attenuation
+	* \param bandwidth The Tx attenuation
+	* \return the actual Tx attenuation
+	*
+	*/
+       virtual uint16_t set_tx_attenuation(uint16_t tx_atten) = 0;
+
+       /*! 
+	* \brief Get the Tx attenuation
+	* \return the actual Tx attenuation
+	*
+	* Get the Tx attenuation of the Sidekiq. 
+	*/
+       virtual uint16_t tx_attenuation(void) = 0;
     };
 
   } // namespace sidekiq

@@ -46,6 +46,17 @@ namespace gr {
 	uint64_t set_center_freq(float freq);
 	uint64_t center_freq(void);
 
+	uint32_t set_sample_rate(uint32_t sample_rate);
+	uint32_t set_sample_rate(float sample_rate);
+	uint32_t sample_rate(void);
+
+	uint32_t set_bandwidth(uint32_t bandwidth);
+	uint32_t set_bandwidth(float bandwidth);
+	uint32_t bandwidth(void);
+
+        uint16_t set_tx_attenuation(uint16_t attenuation);
+        uint16_t tx_attenuation(void);
+
 	// Where all the action really happens
 	int work(int noutput_items,
 		 gr_vector_const_void_star &input_items,
@@ -54,20 +65,6 @@ namespace gr {
 #if 0
 	bool stop();
 	bool start();
-
-	uint64_t set_center_freq(uint64_t freq);
-	uint64_t set_center_freq(float freq);
-	uint64_t center_freq(void);
-
-	uint32_t set_sample_rate(uint32_t sample_rate);
-	uint32_t set_sample_rate(float sample_rate);
-	uint32_t sample_rate(void);
-	
-	uint8_t set_rx_gain(uint8_t gain);
-	uint8_t rx_gain(void);
-
-	GAIN_MODE set_rx_gain_mode(GAIN_MODE mode);
-	GAIN_MODE rx_gain_mode(void);
 #endif
     };
 

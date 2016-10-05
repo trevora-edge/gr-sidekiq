@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /* 
- * Copyright 2013 Epiq Solutions.
+ * Copyright 2015 Epiq Solutions.
  * 
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,11 +17,10 @@
  * the Free Software Foundation, Inc., 51 Franklin Street,
  * Boston, MA 02110-1301, USA.
  */
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include "sidekiq_rx.h"
+#include "sidekiq_tx.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -41,26 +40,14 @@
 #include <string>
 #include <math.h>
 #include <stdexcept>
+#include <inttypes.h>
 #include "srfs_interface.h"
 
 namespace gr {
     namespace sidekiq {
 
-#define DEBUG_SIDEKIQ 0
-#define DEBUG(A)    if( DEBUG_SIDEKIQ ) printf("=RX: debug=> %s\n", A)
-
-#define IQ_HEADER_SIZE (sizeof(srfs::BINARY_IQ))
-#define BINARY_HEADER_SIZE (sizeof(srfs::BINARY))
-
-// TODO: add this as a configuration parameter to the block
-// Note: there is a tradoff here between latency and performance
-// This value accounts for the frequency in which sample data is
-// provided.  The higher the packet size, the greater latency but 
-// improved performance
-#define PKT_SIZE (40960*5) 
-#define NUM_SAMPLES (PKT_SIZE/sizeof(uint32_t))
-
-#define NUM_RECV_ATTEMPTS (10)//(3)
+#define DEBUG_SIDEKIQ 1
+#define DEBUG(A)    if( DEBUG_SIDEKIQ ) printf("=debug=> %s\n", A)
 
 #define FREQUENCY_MIN  47000000ULL
 #define FREQUENCY_MAX 6000000000ULL
@@ -70,21 +57,18 @@ namespace gr {
 #define SAMPLE_RATE_MAX 50000000
 #define SAMPLE_RATE_RESOLUTION 1
 
-#define BANDWIDTH_MIN   (SAMPLE_RATE_MIN)
-#define BANDWIDTH_MAX   (SAMPLE_RATE_MAX)
-#define BANDWIDTH_RESOLUTION (SAMPLE_RATE_RESOLUTION)
+#define BLOCK_SIZE (8188) // hard coded for now         
 
-#define RX_GAIN_MIN        0
-#define RX_GAIN_MAX       76
-#define RX_GAIN_RESOLUTION 1
-
-sidekiq_rx::sidekiq_rx(const char* addr, unsigned short port)
+sidekiq_tx::sidekiq_tx(const char *ip_addr, unsigned short port)
 {
     struct timeval tv;
     tv.tv_sec = 10;
     tv.tv_usec = 0;
 
-    d_server = gethostbyname( addr );
+    char msg[1000];
+    
+
+    d_server = gethostbyname( ip_addr );
 
     if ((d_sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 	throw std::runtime_error("unable to create socket");
@@ -109,39 +93,83 @@ sidekiq_rx::sidekiq_rx(const char* addr, unsigned short port)
                        sizeof( d_server_addr ) ) ) {
 	throw std::runtime_error("unable to connect to sidekiq");
     }
+    printf("!!!!got connection!!!!\r\n");
 
     d_addr_len = sizeof(struct sockaddr);
 
-    // set default values
-    d_rx_freq = FREQUENCY_MIN;
-    d_rx_sample_rate = SAMPLE_RATE_MIN;
-    d_rx_bandwidth = BANDWIDTH_MIN;
-    d_rx_gain = 50;
-    d_rx_gain_mode = GAIN_MODE_MANUAL;
     d_srfs_src_status = STATUS_DISABLED;
 
-    d_state = STATE_STOPPED;
+    // TODO: default params
+    d_tx_freq = 800000000;
+    d_tx_sample_rate = 10000000;
 
+#if 0    
+    set_center_freq(800000000);
+    set_sample_rate(10000000);
+    set_bandwidth(10000000);
+    set_tx_attenuation(50);
+
+    snprintf( msg, 10, "help\r\n" );
+    send_msg( msg );
+    receive_msg( msg, 1000 );
+
+    // TODO: don't hardcode blocksize to 8k
+    snprintf( msg, 100, "write block_size %u", BLOCK_SIZE);
+    send_msg( msg );
+    receive_msg( msg, 1000 );
+
+    // TODO: don't hardcode sample rate
+    snprintf( msg, 100, "write sample_rate 30000000");
+    send_msg( msg );
+    receive_msg( msg, 1000 );
+
+    // TODO: add start/stop control
+    snprintf( msg, 100, "write streaming 1");
+    send_msg( msg );
+    receive_msg( msg, 1000 );
+
+    sleep(1);
+
+    d_iq_sock = socket( AF_INET, SOCK_STREAM, 0 );
+
+    memset( &d_iq_server_addr, 0, sizeof(d_iq_server_addr) );
+    d_iq_server_addr.sin_family = AF_INET;
+    d_iq_server_addr.sin_port = htons( 7001 ); // TODO
+    memcpy( &d_iq_server_addr.sin_addr.s_addr,
+        d_server->h_addr,
+        d_server->h_length );
+
+    if ( 0 != connect( d_iq_sock,
+                       (struct sockaddr *)&d_iq_server_addr,
+                       sizeof(d_iq_server_addr) ) ) {
+	throw std::runtime_error("unable to connect to IQ socket");
+    }
+#endif
+printf("TX INIT SRFS\r\n");
     init_srfs_params();
+
+printf("TX OPEN SRFS\r\n");
 
     // Get SRFS spun up
     open_srfs();
+
+printf("!!!!!!!!!!!!!!!!!calling start!!!!!!!!!!!!!\r\n");
+    start();
 }
 
-sidekiq_rx::~sidekiq_rx()
+sidekiq_tx::~sidekiq_tx()
 {
-    sidekiq_rx::stop();
+    stop();
     close_srfs();
-    close(d_sock);
 }
 
 void
-sidekiq_rx::init_srfs_params(void)
+sidekiq_tx::init_srfs_params(void)
 {
     // frequency
     add_srfs_param( "frequency",
 		    srfs::SRFS_UINT64,
-		    (void*)(&d_rx_freq),
+		    (void*)(&d_tx_freq),
 		    FREQUENCY_MIN,
 		    FREQUENCY_MAX,
 		    FREQUENCY_RESOLUTION,
@@ -150,12 +178,13 @@ sidekiq_rx::init_srfs_params(void)
     // sample rate
     add_srfs_param( "sample_rate",
 		    srfs::SRFS_UINT32,
-		    (void*)(&d_rx_sample_rate),
+		    (void*)(&d_tx_sample_rate),
 		    SAMPLE_RATE_MIN,
 		    SAMPLE_RATE_MAX,
 		    SAMPLE_RATE_RESOLUTION,
 		    NULL );
 
+#if 0
     // bandwidth
     add_srfs_param( "bandwidth",
 		    srfs::SRFS_UINT32,
@@ -182,10 +211,11 @@ sidekiq_rx::init_srfs_params(void)
 		    GAIN_MODE_INVALID,
 		    1,
 		    gain_mode_str );
+#endif
 }
 
 void 
-sidekiq_rx::add_srfs_param( const std::string token,
+sidekiq_tx::add_srfs_param( const std::string token,
                             srfs::SRFS_DATATYPES data_type,
                             void *p_value,
                             int64_t min_value,
@@ -206,7 +236,7 @@ sidekiq_rx::add_srfs_param( const std::string token,
 }
 
 void
-sidekiq_rx::set_param( const std::string token, void *pValue )
+sidekiq_tx::set_param( const std::string token, void *pValue )
 {
     param_map::iterator iter;
 
@@ -226,73 +256,62 @@ sidekiq_rx::set_param( const std::string token, void *pValue )
     }
 }
 
-uint64_t
-sidekiq_rx::set_center_freq(uint64_t rx_freq)
+uint64_t 
+sidekiq_tx::set_center_freq(uint64_t freq)
 {
-    set_param( "frequency", &rx_freq );
-    return d_rx_freq;
+    set_param( "frequency", &freq );
+    return d_tx_freq;
 }
 
-uint64_t
-sidekiq_rx::center_freq(void)
+uint64_t 
+sidekiq_tx::center_freq(void)
 {
-    return d_rx_freq;
+    return d_tx_freq;
 }
 
+uint32_t 
+sidekiq_tx::set_sample_rate(uint32_t sample_rate)
+{
+    set_param("sample_rate", &sample_rate);
+    return d_tx_sample_rate;
+}
+ 
 uint32_t
-sidekiq_rx::set_sample_rate(uint32_t rx_sample_rate)
+sidekiq_tx::sample_rate(void)
 {
-    set_param("sample_rate", &rx_sample_rate);
-    return d_rx_sample_rate;
+    return d_tx_sample_rate;
 }
 
-uint32_t
-sidekiq_rx::sample_rate(void)
+uint32_t 
+sidekiq_tx::set_bandwidth(uint32_t bandwidth)
 {
-    return d_rx_sample_rate;
+    printf("bandwidth TODO\r\n");
+
+    d_tx_bandwidth = bandwidth;
 }
 
-uint32_t
-sidekiq_rx::set_bandwidth(uint32_t rx_bandwidth)
+uint32_t 
+sidekiq_tx::bandwidth(void)
 {
-    set_param("bandwidth", &rx_bandwidth);
-    return d_rx_bandwidth;
+    return d_tx_bandwidth;
 }
 
-uint32_t
-sidekiq_rx::bandwidth(void)
+uint16_t 
+sidekiq_tx::set_tx_attenuation(uint16_t attenuation)
 {
-    return d_rx_bandwidth;
-}
-	    
-uint8_t 
-sidekiq_rx::set_rx_gain(uint8_t gain)
-{
-    set_param("rx_gain", &gain);
-    return d_rx_gain;
+    printf("attenuation TODO\r\n");
+
+    d_tx_atten = attenuation;
 }
 
-uint8_t 
-sidekiq_rx::rx_gain(void)
+uint16_t 
+sidekiq_tx::tx_attenuation(void)
 {
-    return d_rx_gain;
-}
-	    
-GAIN_MODE 
-sidekiq_rx::set_rx_gain_mode(GAIN_MODE mode)
-{
-    set_param("gain_mode", &mode);
-    return d_rx_gain_mode;
-}
-
-GAIN_MODE 
-sidekiq_rx::rx_gain_mode(void)
-{
-    return d_rx_gain_mode;
+    return d_tx_atten;
 }
 
 void 
-sidekiq_rx::open_srfs()
+sidekiq_tx::open_srfs()
 {
     char cmd[1024];
     char rcv[1024];
@@ -301,13 +320,17 @@ sidekiq_rx::open_srfs()
     std::string str2;
     std::string str3;
 
+#if 0
     // reset to the default state
     snprintf(cmd, 1024, "reset!\n");
     send_msg( cmd );
     receive_msg( rcv, 1024 ); // clear out rcv buf
+#else
+    printf("!!!!!!!!!!!TODO: coordinate reset!!!!\r\n");
+#endif
 
-    // subscribe to SIDEKIQ-RX
-    snprintf(cmd, 1024, "subscribe! block SIDEKIQ-RX\n");
+    // subscribe to SIDEKIQ-TX
+    snprintf(cmd, 1024, "subscribe! block SIDEKIQ-TX\n");
     send_msg( cmd );
     receive_msg( rcv, 1024 );
     
@@ -317,37 +340,62 @@ sidekiq_rx::open_srfs()
     str3 = str2.substr( 0, str2.find(" ") ); // src_port is between : and space
     d_src_port = atoi( str3.c_str() );
 
-    // subscribe to IQ
-    snprintf(cmd, 1024, "subscribe! block IQ\n"); 
-    send_msg( cmd );
-    receive_msg( rcv, 1024 );
-    
-    // parse out IQ port
-    str1 = std::string( rcv );
-    str2 = str1.substr( str1.find(":") + 1 ); // Move one past :
-    str3 = str2.substr( 0, str2.find(" ") ); // iq_port is between : and space
-    d_iq_port = atoi( str3.c_str() );
-
-    // configure IQ to SIDEKIQ-RX
-    snprintf(cmd, 1024, "config! block IQ:%d input SIDEKIQ-RX:%d block_send %d\n", 
-	     d_iq_port, d_src_port, (int32_t)(NUM_SAMPLES));
-    send_msg( cmd );
-    receive_msg( rcv, 1024 );
-    
-    // configure to continuous
-    snprintf(cmd, 1024, 
-	     "config! block IQ:%d duty_cycle continuous\n", 
-	     d_iq_port);
-
-    send_msg( cmd );
-    receive_msg( rcv, 1024 );
-
     d_state = STATE_STARTED;
     d_srfs_src_status = STATUS_ENABLED;
 }
 
+void
+sidekiq_tx::transmit( const int16_t *p_data, uint16_t num_samples )
+{
+    int flags = 0;
+    uint32_t num_samples_sent=0;
+    uint32_t sendCount=0;
+    
+    static int16_t samples_with_hdr[(BLOCK_SIZE*2) + 8]; // +8 for header
+    static uint32_t dataIndex = BLOCK_SIZE*2;
+
+transfer_and_send_data:    
+    if( dataIndex >= (BLOCK_SIZE*2) )
+    {
+        // reset it back to 0
+        dataIndex = 0;
+        //num_pairs = 0;
+
+        //printf("after reset...%u %u %u\r\n", num_pairs, num_samples, dataIndex);
+    }
+
+    // copy over the data
+    for( dataIndex; dataIndex < (BLOCK_SIZE*2); dataIndex++ )
+    {
+        // see if we have more data still
+        if( num_samples_sent >= num_samples )
+        {
+            break;
+        }
+
+        samples_with_hdr[8 + dataIndex] = p_data[num_samples_sent];
+        num_samples_sent++;
+    }
+
+
+    // send a block if we have a full one
+    if( dataIndex >= (BLOCK_SIZE*2) )
+    {
+        if( (sendCount=send( d_iq_sock, samples_with_hdr, ((BLOCK_SIZE*2+8)*2), flags )) < 0 )
+        {
+            printf("send fail\r\n");
+        }
+    }
+    // see if there's more data to copy off
+    if( (num_samples_sent) < num_samples )
+    {
+        goto transfer_and_send_data;
+    }
+}
+
+
 void 
-sidekiq_rx::start()
+sidekiq_tx::start()
 {
     char cmd[1024];
     char rcv[1024];
@@ -359,6 +407,33 @@ sidekiq_rx::start()
     // make sure it's configured
     config_src();
 
+    // enable the IQ data
+    snprintf( cmd, 1024,
+             "config! block SIDEKIQ-TX:%d status enabled\n",
+              d_iq_port );
+    send_msg(cmd);
+    receive_msg(rcv, 1024);
+
+    d_iq_sock = socket( AF_INET, SOCK_STREAM, 0 );
+
+    memset( &d_iq_server_addr, 0, sizeof(d_iq_server_addr) );
+    d_iq_server_addr.sin_family = AF_INET;
+    d_iq_server_addr.sin_port = htons( 7001 ); // TODO
+    memcpy( &d_iq_server_addr.sin_addr.s_addr,
+        d_server->h_addr,
+        d_server->h_length );
+
+printf("!!!!!!!!!trying to connect IQ socket!!!!!\r\n");
+
+    if ( 0 != connect( d_iq_sock,
+                       (struct sockaddr *)&d_iq_server_addr,
+                       sizeof(d_iq_server_addr) ) ) {
+        throw std::runtime_error("unable to connect to IQ socket");
+    }
+
+printf("IQ socket ok\r\n");
+// TODO
+#if 0
     //###################################
     //#     Now Open new IQ Port        #
     //###################################
@@ -389,10 +464,11 @@ sidekiq_rx::start()
     if( DEBUG_SIDEKIQ ) {
 	printf("Successfully opened both ports\n");
     }
+#endif
 }
 
 void 
-sidekiq_rx::close_srfs()
+sidekiq_tx::close_srfs()
 {
     char cmd[1024];
     char rcv[1024];
@@ -400,23 +476,23 @@ sidekiq_rx::close_srfs()
     if ( d_state == STATE_STARTED ) {
 
 	// unsubscribe from the RX block
-        snprintf(cmd, 1024, "unsubscribe! block SIDEKIQ-RX:%d\n", d_src_port);
+        snprintf(cmd, 1024, "unsubscribe! block SIDEKIQ-TX:%d\n", d_src_port);
         send_msg( cmd );
         receive_msg( rcv, 1024 ); // clear out rcv buf
+#if 0
 	// unsubscribe from IQ block
         snprintf(cmd, 1024, "unsubscribe! block IQ:%d\n", d_iq_port);
         send_msg( cmd );
         receive_msg( rcv, 1024 ); // clear out rcv buf
+#endif
     }
 }
 
 void 
-sidekiq_rx::stop()
+sidekiq_tx::stop()
 {
     char cmd[1024];
     char rcv[1024];
-    char data[PKT_SIZE];
-    ssize_t num_bytes = PKT_SIZE;
     uint8_t count = 0;
 
     if( DEBUG_SIDEKIQ ) {
@@ -425,33 +501,21 @@ sidekiq_rx::stop()
 
     if( d_state == STATE_STARTED ) {
 	snprintf( cmd, 1024,
-		 "config! block IQ:%d status disabled\n",
+		 "config! block SIDEKIQ-TX:%d status disabled\n",
 		 d_iq_port );
 	send_msg( cmd );
 	receive_msg( rcv, 1024 );
 
-	// make sure that the IQ socket is flushed out
-	while( count < 2 ) {
-	    num_bytes = recv( d_iq_sock,
-			      data,
-			      PKT_SIZE,
-			      MSG_DONTWAIT );
-	    if( num_bytes != -1 ) {
-		count = 0;
-	    }
-	    else {
-		count++;
-		usleep(100*1000);
-	    }
-	}
+#if 0
 	// shutdown the IQ socket
 	shutdown(d_iq_port, 2);
+#endif
     }
     d_state = STATE_STOPPED;
 }
 
 void 
-sidekiq_rx::send_msg( char * cmd )
+sidekiq_tx::send_msg( char * cmd )
 {
     int flags = 0;
     if (DEBUG_SIDEKIQ) {
@@ -465,7 +529,7 @@ sidekiq_rx::send_msg( char * cmd )
 }
 
 int 
-sidekiq_rx::receive_msg( char * rcv, int size )
+sidekiq_tx::receive_msg( char * rcv, int size )
 {
     int flags = 0;
     int num_bytes;
@@ -488,7 +552,7 @@ sidekiq_rx::receive_msg( char * rcv, int size )
 }    
     
 void 
-sidekiq_rx::config_src()
+sidekiq_tx::config_src()
 {
     char cmd[1024];
     char rcv[1024];
@@ -500,7 +564,7 @@ sidekiq_rx::config_src()
 
     param_map::iterator iter;
 
-    index = snprintf(cmd, 1024, "config! block SIDEKIQ-RX:%d data_flow_mode continuous", d_src_port);
+    index = snprintf(cmd, 1024, "config! block SIDEKIQ-TX:%d", d_src_port);
     // configure all of the parameters
     for( iter=sidekiq_params.begin(); 
 	 iter != sidekiq_params.end(); 
@@ -558,118 +622,6 @@ sidekiq_rx::config_src()
 	// get the next parameter
 	pParam = strtok( NULL, " " );
     } // end parsing
-}
-
-int 
-sidekiq_rx::read(char* buf, bool *p_add_tag, int size)
-{
-    static char data[PKT_SIZE];
-    static uint32_t dataIndex=PKT_SIZE;  // initialize to max, forcing data retrieval
-    static uint64_t old_timestamp;
-    static uint32_t config_id=0xFFFFFFFF;
-    uint64_t timestamp_diff;
-    ssize_t num_bytes;
-    char header[IQ_HEADER_SIZE];
-    bool bMoreData = false;
-    int num_bytes_processed = 0;
-    int recv_result;
-    int count = 0;
-
-    // see if this is the first block we're receiving
-    if( first ) {
-	// reset the index back to max to force more data retrieval
-	dataIndex = PKT_SIZE;
-	first = false;
-    }
-
-    int16_t *tmp = (int16_t*)(&data[dataIndex]);
-    int16_t *tmpBuf = (int16_t*)(buf);
-    uint32_t i=0;
-    for( i=0; (i<(size/2)) && (dataIndex < PKT_SIZE); i++ ) {
-	tmpBuf[i] = be16toh( tmp[i] );
-	num_bytes_processed += 2;
-	dataIndex += 2;
-    } 
-
-    // see if we've ran out of buffer space
-    if( dataIndex >= PKT_SIZE ) {
-	bMoreData = true;
-    }
-    
-    // need to provide more data, try to retrieve it
-    if( bMoreData ) {
-	num_bytes = 0;
-
-	// try to receive just the IQ header
-	while( num_bytes < IQ_HEADER_SIZE ) {
-	    // try to get data but don't block
-	    recv_result = recv( d_iq_sock, 
-				header + num_bytes,
-				IQ_HEADER_SIZE - num_bytes,
-				MSG_DONTWAIT );
-	    if( recv_result < 0 ) {
-		count++;
-		if( count >= NUM_RECV_ATTEMPTS ) {
-		    num_bytes_processed = -1;
-		    first = true;
-		    goto end_recv;
-		}
-		usleep(10*1000);
-	    }
-	    else
-	    {
-		count = 0;
-		num_bytes += recv_result;
-	    }
-	}
-	srfs::BINARY_IQ* binary_iq = (srfs::BINARY_IQ*)(header);
-	// convert to host format
-	srfs::BINARY_IQ_to_host( binary_iq );
-	// get the length of the payload from the header
-	uint32_t length = binary_iq->binary.length - IQ_HEADER_SIZE + BINARY_HEADER_SIZE;
-        // see if the config has been updated, if so, generate tag
-        if( config_id != binary_iq->config_id ) {
-            *p_add_tag = true;
-            printf("config id %u\r\n", config_id);
-            config_id = binary_iq->config_id;
-        }
-
-	num_bytes = 0;
-	dataIndex = 0;
-	count = 0;
-	// receive the payload
-	while( num_bytes < length ) {
-	    // read in the data but don't block
-	    recv_result = recv( d_iq_sock,
-				data + num_bytes,
-				length - num_bytes,
-				MSG_DONTWAIT );
-	    if( recv_result < 0 ) {
-		count++;
-		if( count >= NUM_RECV_ATTEMPTS ) {
-		    num_bytes_processed = -1;
-		    first = true;
-		    goto end_recv;
-		}
-		usleep(10*1000);
-	    }
-	    else {
-		count = 0;
-		num_bytes += recv_result;
-	    }
-	}
-	// Check for dropped samples
-	timestamp_diff = binary_iq->timestamp - old_timestamp;
-	if ( timestamp_diff > (NUM_SAMPLES) )
-	{
-            // TODO: add tag on dropout??
-	    printf("Dropped %lu samples\n", timestamp_diff-NUM_SAMPLES );
-	}
-	old_timestamp = binary_iq->timestamp;
-    }
-
-end_recv:
-    return num_bytes_processed;
 }
 
     } // namespace sidekiq

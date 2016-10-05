@@ -7,9 +7,15 @@
   <import>import sidekiq</import>
   <make>sidekiq.sidekiq_sink_s($ip_address, $port)
 self.$(id).set_center_freq($freq)
+self.$(id).set_sample_rate($sample_rate)
+self.$(id).set_bandwidth($bandwidth)
+self.$(id).set_tx_attenuation($tx_atten)
   </make>
 
   <callback>set_center_freq($freq)</callback>
+  <callback>set_sample_rate($sample_rate)</callback>
+  <callback>set_bandwidth($bandwidth)</callback>
+  <callback>set_tx_attennuation($tx_atten)</callback>
 
   <param>
     <name>Sidekiq IP Address</name>
@@ -29,8 +35,29 @@ self.$(id).set_center_freq($freq)
     <value>800000000</value>
     <type>real</type>
   </param>
+  <param>
+    <name>Sample Rate</name>
+    <key>sample_rate</key>
+    <value>1000000</value>
+    <type>real</type>
+  </param>
+  <param>
+    <name>Bandwidth</name>
+    <key>bandwidth</key>
+    <value>1000000</value>
+    <type>real</type>
+  </param>
+  <param>
+    <name>Tx Attenuation</name>
+    <key>tx_atten</key>
+    <value>50</value>
+    <type>real</type>
+  </param>
 
   <check>($freq &gt;= 47e6) and ($freq &lt;= 6000e6)</check>
+  <check>($sample_rate &gt;= 233e3) and ($sample_rate &lt;= 50e6)</check>
+  <check>($bandwidth &gt;= 233e3) and ($bandwidth &lt;= 50e6)</check>
+  <check>($tx_atten &gt;= 0) and ($tx_atten &lt;= 359)</check>
 
   <sink>
     <name>in</name>
@@ -42,6 +69,15 @@ self.$(id).set_center_freq($freq)
 
     * Frequency:
        The center frequency in Hz
+
+    * Sample Rate:
+       D/A converter's sample rate.  
+
+    * Bandwidth:
+      Channel bandwidth.  
+
+    * Tx Attenuation:
+      Tx attenuation (in 1/4 dB steps)  
 
   </doc>
 

@@ -50,15 +50,12 @@ namespace gr {
       {
 	  tx.reset( new sidekiq_tx(ip_address.c_str(), port) );
 
-          // TODO: add this in!!...probably should be block size
-	  //set_input_multiple(SIDEKIQ_SAMPLES_PER_PACKET*2);
+          // TODO: this should correlate to the block size? or maybe used fixed block size?
+          //set_output_multiple(1024*4);
 
           std::stringstream str;
           str << name() << "_" << unique_id();
           _id = pmt::string_to_symbol(str.str());
-
-	  //rcv.reset( new sidekiq_sink(ip_address.c_str(), port) );
-	  //set_input_multiple(SIDEKIQ_SAMPLES_PER_PACKET*2);
       }
 
       /*
@@ -86,6 +83,54 @@ namespace gr {
 	  return (tx->center_freq());
       }
 
+      uint32_t 
+      sidekiq_sink_s_impl::set_sample_rate(uint32_t sample_rate)
+      {
+          return (tx->set_sample_rate(sample_rate));
+      }
+
+      uint32_t 
+      sidekiq_sink_s_impl::set_sample_rate(float sample_rate)
+      {
+          return (tx->set_sample_rate(sample_rate));
+      }
+
+      uint32_t 
+      sidekiq_sink_s_impl::sample_rate(void)
+      {
+          return (tx->sample_rate());
+      }
+
+      uint32_t 
+      sidekiq_sink_s_impl::set_bandwidth(uint32_t bandwidth)
+      {
+          return (tx->set_bandwidth(bandwidth));
+      }
+
+      uint32_t 
+      sidekiq_sink_s_impl::set_bandwidth(float bandwidth)
+      {
+          return (tx->set_bandwidth(bandwidth));
+      }
+
+      uint32_t 
+      sidekiq_sink_s_impl::bandwidth(void)
+      {
+          return (tx->bandwidth());
+      }
+
+      uint16_t 
+      sidekiq_sink_s_impl::set_tx_attenuation(uint16_t attenuation)
+      {
+          return (tx->set_tx_attenuation(attenuation));
+      }
+
+      uint16_t 
+      sidekiq_sink_s_impl::tx_attenuation(void)
+      {
+          return (tx->tx_attenuation());
+      }
+
       int
       sidekiq_sink_s_impl::work(int noutput_items,
 				  gr_vector_const_void_star &input_items,
@@ -95,21 +140,7 @@ namespace gr {
           const int16_t* in = reinterpret_cast<const int16_t *>(input_items[0]);
 
           //printf("input %d\r\n", ninput_items);
-
-#if 0
-          // TODO: super dumb but it won't compile...
-          printf("copying...\r\n");
-          for( uint32_t i=0; i<ninput_items; i++ )
-          {
-              printf("i is %u\r\n", i);
-              data[(i*2)] = (int16_t)(output_items[i]);
-              data[(i*2)+1] = *(int16_t*)(output_items[i]);
-              printf("data %d %d\r\n", data[(i*2)], data[(i*2)+1]);
-          }
-#endif
-          //printf("done copying\r\n");
-          tx->transmit( (const int16_t*)(in), ninput_items );
-          //printf("transmit done\r\n");
+          tx->transmit( (const int16_t*)(in), ninput_items/2 );
 
           return (ninput_items);
       }
