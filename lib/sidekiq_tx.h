@@ -77,7 +77,7 @@ namespace gr {
         uint64_t d_tx_freq;
         uint32_t d_tx_sample_rate;
         uint32_t d_tx_bandwidth;
-        uint8_t d_tx_atten;
+        uint16_t d_tx_atten;
 
 	STATUS d_srfs_src_status;
 

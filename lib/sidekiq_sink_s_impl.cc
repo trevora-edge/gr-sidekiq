@@ -25,10 +25,6 @@
 #include <gnuradio/io_signature.h>
 #include "sidekiq_sink_s_impl.h"
 
-#define     SIDEKIQ_SAMPLES_PER_PACKET        (1024)
-// *2 for I & Q
-#define BUF_LEN      (SIDEKIQ_SAMPLES_PER_PACKET*sizeof(short)*2)
-
 namespace gr {
   namespace sidekiq {
 
@@ -49,9 +45,6 @@ namespace gr {
                            gr::io_signature::make(0, 0, 0))
       {
 	  tx.reset( new sidekiq_tx(ip_address.c_str(), port) );
-
-          // TODO: this should correlate to the block size? or maybe used fixed block size?
-          //set_output_multiple(1024*4);
 
           std::stringstream str;
           str << name() << "_" << unique_id();

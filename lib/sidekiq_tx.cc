@@ -57,6 +57,14 @@ namespace gr {
 #define SAMPLE_RATE_MAX 50000000
 #define SAMPLE_RATE_RESOLUTION 1
 
+#define BANDWIDTH_MIN   233000
+#define BANDWIDTH_MAX 50000000
+#define BANDWIDTH_RESOLUTION 1
+ 
+#define ATTENUATION_MIN   0
+#define ATTENUATION_MAX 359
+#define ATTENUATION_RESOLUTION 1
+       
 #define BLOCK_SIZE (8188) // hard coded for now         
 
 sidekiq_tx::sidekiq_tx(const char *ip_addr, unsigned short port)
@@ -102,58 +110,18 @@ sidekiq_tx::sidekiq_tx(const char *ip_addr, unsigned short port)
     // TODO: default params
     d_tx_freq = 800000000;
     d_tx_sample_rate = 10000000;
+    d_tx_bandwidth = d_tx_sample_rate;
+    d_tx_atten = 50;
 
-#if 0    
-    set_center_freq(800000000);
-    set_sample_rate(10000000);
-    set_bandwidth(10000000);
-    set_tx_attenuation(50);
-
-    snprintf( msg, 10, "help\r\n" );
-    send_msg( msg );
-    receive_msg( msg, 1000 );
-
-    // TODO: don't hardcode blocksize to 8k
-    snprintf( msg, 100, "write block_size %u", BLOCK_SIZE);
-    send_msg( msg );
-    receive_msg( msg, 1000 );
-
-    // TODO: don't hardcode sample rate
-    snprintf( msg, 100, "write sample_rate 30000000");
-    send_msg( msg );
-    receive_msg( msg, 1000 );
-
-    // TODO: add start/stop control
-    snprintf( msg, 100, "write streaming 1");
-    send_msg( msg );
-    receive_msg( msg, 1000 );
-
-    sleep(1);
-
-    d_iq_sock = socket( AF_INET, SOCK_STREAM, 0 );
-
-    memset( &d_iq_server_addr, 0, sizeof(d_iq_server_addr) );
-    d_iq_server_addr.sin_family = AF_INET;
-    d_iq_server_addr.sin_port = htons( 7001 ); // TODO
-    memcpy( &d_iq_server_addr.sin_addr.s_addr,
-        d_server->h_addr,
-        d_server->h_length );
-
-    if ( 0 != connect( d_iq_sock,
-                       (struct sockaddr *)&d_iq_server_addr,
-                       sizeof(d_iq_server_addr) ) ) {
-	throw std::runtime_error("unable to connect to IQ socket");
-    }
-#endif
-printf("TX INIT SRFS\r\n");
+    printf("TX INIT SRFS\r\n");
     init_srfs_params();
 
-printf("TX OPEN SRFS\r\n");
+    printf("TX OPEN SRFS\r\n");
 
     // Get SRFS spun up
     open_srfs();
-
-printf("!!!!!!!!!!!!!!!!!calling start!!!!!!!!!!!!!\r\n");
+    
+    printf("!!!!!!!!!!!!!!!!!calling start!!!!!!!!!!!!!\r\n");
     start();
 }
 
@@ -184,15 +152,25 @@ sidekiq_tx::init_srfs_params(void)
 		    SAMPLE_RATE_RESOLUTION,
 		    NULL );
 
-#if 0
     // bandwidth
     add_srfs_param( "bandwidth",
 		    srfs::SRFS_UINT32,
-		    (void*)(&d_rx_bandwidth),
+		    (void*)(&d_tx_bandwidth),
 		    BANDWIDTH_MIN,
 		    BANDWIDTH_MAX,
 		    BANDWIDTH_RESOLUTION,
 		    NULL );
+
+    // bandwidth
+    add_srfs_param( "attenuation",
+		    srfs::SRFS_UINT16,
+		    (void*)(&d_tx_atten),
+		    ATTENUATION_MIN,
+		    ATTENUATION_MAX,
+		    ATTENUATION_RESOLUTION,
+		    NULL );
+    
+#if 0
 
     // rx gain
     add_srfs_param( "rx_gain",
@@ -285,8 +263,7 @@ sidekiq_tx::sample_rate(void)
 uint32_t 
 sidekiq_tx::set_bandwidth(uint32_t bandwidth)
 {
-    printf("bandwidth TODO\r\n");
-
+    set_param("bandwidth", &bandwidth);
     d_tx_bandwidth = bandwidth;
 }
 
@@ -299,8 +276,7 @@ sidekiq_tx::bandwidth(void)
 uint16_t 
 sidekiq_tx::set_tx_attenuation(uint16_t attenuation)
 {
-    printf("attenuation TODO\r\n");
-
+    set_param("attenuation", &attenuation);
     d_tx_atten = attenuation;
 }
 
@@ -423,7 +399,7 @@ sidekiq_tx::start()
         d_server->h_addr,
         d_server->h_length );
 
-printf("!!!!!!!!!trying to connect IQ socket!!!!!\r\n");
+    printf("!!!!!!!!!trying to connect IQ socket!!!!!\r\n");
 
     if ( 0 != connect( d_iq_sock,
                        (struct sockaddr *)&d_iq_server_addr,
@@ -431,7 +407,7 @@ printf("!!!!!!!!!trying to connect IQ socket!!!!!\r\n");
         throw std::runtime_error("unable to connect to IQ socket");
     }
 
-printf("IQ socket ok\r\n");
+    printf("IQ socket ok\r\n");
 // TODO
 #if 0
     //###################################
