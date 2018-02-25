@@ -73,13 +73,15 @@ sidekiq_tx_impl::sidekiq_tx_impl(
 		bool suppress_tune_transients,
 		uint8_t dataflow_mode,
 		int buffer_size,
-		const std::vector<float> &taps)
+		const std::vector<float> &taps,
+                const uint8_t card)
 		: gr::sync_block(
 		"sidekiq_tx",
 		gr::io_signature::make(1, 1, sizeof(gr_complex)),
 		gr::io_signature::make(0, 0, 0)),
 		  sidekiq_tx_base{
 				  sync_type,
+                                  card,
 				  skiq_tx_hdl_A1,
 				  gr::sidekiq::sidekiq_functions<skiq_tx_hdl_t>(
 						  skiq_start_tx_streaming,

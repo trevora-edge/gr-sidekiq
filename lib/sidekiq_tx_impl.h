@@ -41,7 +41,8 @@ namespace gr {
 					bool suppress_tune_transients,
 					uint8_t dataflow_mode,
 					int buffer_size,
-					const std::vector<float> &taps);
+					const std::vector<float> &taps,
+                                        const uint8_t card=0);
 
 			int work(
 					int noutput_items,

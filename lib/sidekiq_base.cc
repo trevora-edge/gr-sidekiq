@@ -48,12 +48,14 @@ static const size_t NANOSECONDS_IN_SECOND{1000000000L};
 template<typename HdlType>
 sidekiq_base<HdlType>::sidekiq_base(
 		int sync_type,
+                uint8_t card_,
 		HdlType handle_type,
 		gr::sidekiq::sidekiq_functions<HdlType> sidekiq_functions) :
 		sidekiq_functions(sidekiq_functions) {
-	card = 0;
+
+        card = card_;
 	hdl = handle_type;
-	int32_t status{skiq_init(skiq_xport_type_pcie, skiq_xport_init_level_full, &card, NUM_CARDS)};
+	int32_t status{skiq_init(skiq_xport_type_auto, skiq_xport_init_level_full, &card, NUM_CARDS)};
 	if (status != 0) {
 		printf("Error: unable to initialize libsidekiq with status %d\n", status);
 	}

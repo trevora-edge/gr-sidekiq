@@ -38,7 +38,8 @@ namespace gr {
 					double bandwitdh,
 					int sync_type,
 					size_t num_items,
-					const std::vector<float> &taps);
+					const std::vector<float> &taps,
+                                        const uint8_t card=0);
 
 			int work(
 					int noutput_items,

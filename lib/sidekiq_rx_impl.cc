@@ -80,7 +80,8 @@ sidekiq_rx_impl::sidekiq_rx_impl(
 		double bandwidth,
 		int sync_type,
 		size_t num_items,
-		const std::vector<float> &taps) :
+		const std::vector<float> &taps,
+                const uint8_t card) :
 		gr::sync_block{
 				"sidekiq_rx",
 				gr::io_signature::make(0, 0, 0),
@@ -88,6 +89,7 @@ sidekiq_rx_impl::sidekiq_rx_impl(
 		},
 		sidekiq_rx_base{
 				sync_type,
+                                card,
 				skiq_rx_hdl_A1,
 				gr::sidekiq::sidekiq_functions<skiq_rx_hdl_t>(
 						skiq_start_rx_streaming,
