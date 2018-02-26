@@ -5,7 +5,7 @@
     <category>[sidekiq]</category>
     <import>import sidekiq</import>
     <make>sidekiq.sidekiq_tx($sample_rate, $attenuation, $frequency, $bandwidth, $sync, $suppress_tune_transients,
-        $dataflow_mode, $buffer_size, $filter_override_taps)
+        $dataflow_mode, $buffer_size, $filter_override_taps, $card)
     </make>
     <callback>set_tx_sample_rate($sample_rate)</callback>
     <callback>set_tx_attenuation($attenuation)</callback>
@@ -109,6 +109,12 @@
         <name>Filter Override Taps</name>
         <key>filter_override_taps</key>
         <type>real_vector</type>
+    </param>
+    <param>
+        <name>Sidekiq Card</name>
+        <key>card</key>
+        <value>0</value>
+        <type>int</type>
     </param>
     <sink>
         <name>command</name>

@@ -49,7 +49,8 @@ sidekiq_tx::sptr sidekiq_tx::make(
 		bool suppress_tune_transients,
 		uint8_t dataflow_mode,
 		int buffer_size,
-		const std::vector<float> &taps) {
+		const std::vector<float> &taps,
+                const uint8_t card) {
 	return gnuradio::get_initial_sptr(
 			new sidekiq_tx_impl(
 					sample_rate,
