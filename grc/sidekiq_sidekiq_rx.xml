@@ -4,7 +4,7 @@
     <key>sidekiq_sidekiq_rx</key>
     <category>[sidekiq]</category>
     <import>import sidekiq</import>
-    <make>sidekiq.sidekiq_rx($sample_rate, $gain, $gain_mode, $frequency, $bandwidth, $sync, $num_items, $filter_override_taps)</make>
+    <make>sidekiq.sidekiq_rx($sample_rate, $gain, $gain_mode, $frequency, $bandwidth, $sync, $num_items, $filter_override_taps, $card)</make>
     <callback>set_rx_sample_rate($sample_rate)</callback>
     <callback>set_rx_gain($gain)</callback>
     <callback>set_rx_frequency($frequency)</callback>
@@ -70,6 +70,12 @@
         <name>Filter Override Taps</name>
         <key>filter_override_taps</key>
         <type>real_vector</type>
+    </param>
+    <param>
+        <name>Sidekiq Card</name>
+        <key>card</key>
+        <value>0</value>
+        <type>int</type>
     </param>
     <param>
         <name>Vec Length</name>

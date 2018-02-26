@@ -59,7 +59,8 @@ sidekiq_rx::sptr sidekiq_rx::make(
 		double bandwidth,
 		int sync_type,
 		size_t num_items,
-		const std::vector<float> &taps) {
+		const std::vector<float> &taps,
+                const uint8_t card) {
 	return boost::make_shared<sidekiq_rx_impl>(
 			sample_rate,
 			gain,
@@ -68,7 +69,8 @@ sidekiq_rx::sptr sidekiq_rx::make(
 			bandwidth,
 			sync_type,
 			num_items,
-			taps
+			taps,
+                        card
 	);
 }
 
