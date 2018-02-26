@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Top Block
-# Generated: Mon Feb 26 06:52:38 2018
+# Generated: Mon Feb 26 07:06:02 2018
 ##################################################
 
 if __name__ == '__main__':
@@ -112,7 +112,7 @@ class top_block(gr.top_block, Qt.QWidget):
         _variable_function_probe_0_thread.daemon = True
         _variable_function_probe_0_thread.start()
 
-        self.sidekiq_sidekiq_rx_1 = sidekiq.sidekiq_rx(sample_rate, gain, 0, center_freq, bandwidth, 1, vector_length, (), 0)
+        self.sidekiq_sidekiq_rx_1 = sidekiq.sidekiq_rx(sample_rate, gain, 0, center_freq, bandwidth, 1, vector_length, (), 1)
         self.qtgui_time_sink_x_1 = qtgui.time_sink_c(
         	2**14, #size
         	sample_rate, #samp_rate

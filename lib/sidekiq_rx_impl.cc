@@ -272,9 +272,9 @@ int sidekiq_rx_impl::work(
 	auto out = static_cast<gr_complex *>(output_items[output_port]);
 
 	if (nitems_written(output_port) - last_status_update_sample > status_update_rate_in_samples) {
-		printf("Timestamp gap count: %ld\n", timestamp_gap_count);
+                printf("Timestamp gap count: %ld, card %u\n", timestamp_gap_count, card);
 		last_status_update_sample = nitems_written(output_port);
-		printf("Last System Timestamp: %ld\n", get_last_pps_timestamp());
+		printf("Last PPS System Timestamp: %ld\n", get_last_pps_timestamp());
 	}
 
 	while ((unsigned int)(noutput_items - samples_receive_count) >= (DATA_MAX_BUFFER_SIZE)) {

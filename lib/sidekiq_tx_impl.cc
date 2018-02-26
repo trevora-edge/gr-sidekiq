@@ -61,7 +61,8 @@ sidekiq_tx::sptr sidekiq_tx::make(
 					suppress_tune_transients,
 					dataflow_mode,
 					buffer_size,
-					taps
+					taps,
+                                        card
 			));
 }
 
@@ -245,7 +246,7 @@ void sidekiq_tx_impl::update_tx_error_count() {
 	if (dataflow_mode == skiq_tx_immediate_data_flow_mode) {
 		skiq_read_tx_num_underruns(card, hdl, &num_tx_errors);
 		if (last_num_tx_errors != num_tx_errors) {
-			printf("TX underrun count: %u\n", num_tx_errors);
+                        printf("TX underrun count: %u (card %u)\n", num_tx_errors, card);
 			last_num_tx_errors = num_tx_errors;
 		}
 	} else {
