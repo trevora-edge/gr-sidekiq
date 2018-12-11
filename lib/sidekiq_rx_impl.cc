@@ -43,6 +43,8 @@ const pmt_t RX_FREQ_KEY{pmt::string_to_symbol("rx_freq")};
 
 const pmt_t RX_GAIN_KEY{pmt::string_to_symbol("rx_gain")};
 
+const pmt_t RX_GAIN_INDEX_KEY{pmt::string_to_symbol("rx_gain_index")};
+
 const pmt_t CONTROL_MESSAGE_PORT{pmt::string_to_symbol("command")};
 
 const pmt_t TELEMETRY_MESSAGE_PORT{pmt::string_to_symbol("telemetry")};
@@ -324,11 +326,13 @@ void sidekiq_rx_impl::apply_all_tags(size_t sample_index, size_t timestamp) {
 	const pmt::pmt_t rate_pmt = pmt::from_double(get_sample_rate());
 	const pmt::pmt_t freq_pmt = pmt::from_double(get_frequency());
 	const pmt::pmt_t gain_pmt = pmt::from_double(get_rx_gain());
+	const pmt::pmt_t gain_index_pmt = pmt::from_long(get_rx_gain_index());
 
 	this->add_item_tag(output, sample_index, RX_TIME_KEY, sample_time_pmt, block_id);
 	this->add_item_tag(output, sample_index, RX_RATE_KEY, rate_pmt, block_id);
 	this->add_item_tag(output, sample_index, RX_FREQ_KEY, freq_pmt, block_id);
 	this->add_item_tag(output, sample_index, RX_GAIN_KEY, gain_pmt, block_id);
+	this->add_item_tag(output, sample_index, RX_GAIN_INDEX_KEY, gain_index_pmt, block_id);
 	tag_now = false;
 }
 
