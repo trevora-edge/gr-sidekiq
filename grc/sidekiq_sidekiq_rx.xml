@@ -7,6 +7,7 @@
     <make>sidekiq.sidekiq_rx($sample_rate, $gain, $gain_mode, $frequency, $bandwidth, $sync, $num_items, $filter_override_taps)</make>
     <callback>set_rx_sample_rate($sample_rate)</callback>
     <callback>set_rx_gain($gain)</callback>
+    <callback>set_rx_gain_index($gain_index)</callback>
     <callback>set_rx_frequency($frequency)</callback>
     <callback>set_rx_bandwidth($bandwidth)</callback>
     <callback>set_rx_filter_override_taps($filter_override_taps)</callback>
@@ -21,6 +22,11 @@
         <key>gain</key>
         <value>1</value>
         <type>real</type>
+    </param>
+    <param>
+        <name>Gain Index</name>
+        <key>gain_index</key>
+        <type>int</type>
     </param>
     <param>
         <name>Gain Mode</name>

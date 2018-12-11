@@ -53,6 +53,8 @@ namespace gr {
 
 			void set_rx_gain(double value) override;
 
+                        void set_rx_gain_index(double value) override;
+
 			void set_rx_frequency(double value) override;
 
 			void set_rx_bandwidth(double bandwidth) override;
@@ -73,6 +75,7 @@ namespace gr {
 			uint8_t get_rx_gain_mode();
 			void set_rx_gain_mode(uint8_t value);
 			double get_rx_gain();
+                        uint8_t get_rx_gain_index();
                         void get_rx_gain_range( double *p_min_gain, double *p_max_gain );
 			void output_telemetry_message();
 			void handle_control_message(pmt::pmt_t message);

@@ -51,6 +51,8 @@ namespace gr {
 
 			virtual void set_rx_gain(double value) = 0;
 
+                        virtual void set_rx_gain_index(double value) = 0;
+
 			virtual void set_rx_frequency(double value) = 0;
 
 			virtual void set_rx_bandwidth(double value) = 0;

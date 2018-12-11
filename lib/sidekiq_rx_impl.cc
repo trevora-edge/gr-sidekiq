@@ -164,6 +164,16 @@ double sidekiq_rx_impl::get_rx_gain() {
 	return cal_offset;
 }
 
+uint8_t sidekiq_rx_impl::get_rx_gain_index() {
+        uint8_t gain_index;
+
+	if (skiq_read_rx_gain(card, hdl, &gain_index) != 0) {
+		printf("Error: could not RX gain index\n");
+	}
+
+	return gain_index;
+}
+
 void sidekiq_rx_impl::get_rx_gain_range( double *p_min_gain, double *p_max_gain )
 {
        // determine the minimum and maximum gain we can achieve
@@ -234,6 +244,15 @@ void sidekiq_rx_impl::set_rx_gain(double value) {
     } else {
         tag_now = true;
     }
+}
+
+void sidekiq_rx_impl::set_rx_gain_index(double value) {
+    if( skiq_write_rx_gain(card, hdl, (uint8_t)(value)) != 0 ) {
+        printf("Error: could not set gain index to %f\n", value);
+    }
+    else {
+        tag_now = true;
+    }       
 }
 
 void sidekiq_rx_impl::set_rx_sample_rate(double value) {
