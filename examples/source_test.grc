@@ -1740,6 +1740,10 @@
   <block>
     <key>sidekiq_sidekiq_rx</key>
     <param>
+        <key>card</key>
+        <value>0</value>
+    </param>
+    <param>
       <key>bandwidth</key>
       <value>bandwidth</value>
     </param>

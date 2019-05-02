@@ -1272,6 +1272,10 @@
   <block>
     <key>sidekiq_sidekiq_tx</key>
     <param>
+        <key>card</key>
+        <value>0</value>
+    </param>
+    <param>
       <key>attenuation</key>
       <value>gain</value>
     </param>

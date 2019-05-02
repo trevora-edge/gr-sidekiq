@@ -143,7 +143,7 @@ class top_block(gr.top_block, Qt.QWidget):
         _variable_function_probe_0_thread.daemon = True
         _variable_function_probe_0_thread.start()
 
-        self.sidekiq_sidekiq_tx_0 = sidekiq.sidekiq_tx(sample_rate, atten_quart_db, center_freq, bandwidth, 1, bool(suppress_tune_transients_chooser),
+        self.sidekiq_sidekiq_tx_0 = sidekiq.sidekiq_tx(0, sample_rate, atten_quart_db, center_freq, bandwidth, 1, bool(suppress_tune_transients_chooser),
                 0, 32764, ())
 
         self.blocks_tag_debug_0 = blocks.tag_debug(gr.sizeof_gr_complex*1, '', ""); self.blocks_tag_debug_0.set_display(True)
