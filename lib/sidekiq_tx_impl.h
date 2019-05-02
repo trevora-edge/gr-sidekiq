@@ -33,6 +33,7 @@ namespace gr {
 		class sidekiq_tx_impl : public sidekiq_tx, sidekiq_tx_base {
 		public:
 			sidekiq_tx_impl(
+					uint8_t card,
 					double sample_rate,
 					double attenuation,
 					double frequency,

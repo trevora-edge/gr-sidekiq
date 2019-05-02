@@ -47,11 +47,12 @@ static const size_t NANOSECONDS_IN_SECOND{1000000000L};
 
 template<typename HdlType>
 sidekiq_base<HdlType>::sidekiq_base(
+		uint8_t card,
 		int sync_type,
 		HdlType handle_type,
 		gr::sidekiq::sidekiq_functions<HdlType> sidekiq_functions) :
+		card(card),
 		sidekiq_functions(sidekiq_functions) {
-	card = 0;
 	hdl = handle_type;
 	int32_t status{skiq_init(skiq_xport_type_pcie, skiq_xport_init_level_full, &card, NUM_CARDS)};
 	if (status != 0) {

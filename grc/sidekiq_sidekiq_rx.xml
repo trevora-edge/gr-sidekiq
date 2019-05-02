@@ -4,12 +4,18 @@
     <key>sidekiq_sidekiq_rx</key>
     <category>[sidekiq]</category>
     <import>import sidekiq</import>
-    <make>sidekiq.sidekiq_rx($sample_rate, $gain, $gain_mode, $frequency, $bandwidth, $sync, $num_items, $filter_override_taps)</make>
+    <make>sidekiq.sidekiq_rx($card, $sample_rate, $gain, $gain_mode, $frequency, $bandwidth, $sync, $num_items, $filter_override_taps)</make>
     <callback>set_rx_sample_rate($sample_rate)</callback>
     <callback>set_rx_gain($gain)</callback>
     <callback>set_rx_frequency($frequency)</callback>
     <callback>set_rx_bandwidth($bandwidth)</callback>
     <callback>set_rx_filter_override_taps($filter_override_taps)</callback>
+    <param>
+        <name>Card number</name>
+        <key>card</key>
+        <value>0</value>
+        <type>byte</type>
+    </param>
     <param>
         <name>Sample Rate</name>
         <key>sample_rate</key>

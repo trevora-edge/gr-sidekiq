@@ -4,7 +4,7 @@
     <key>sidekiq_sidekiq_tx</key>
     <category>[sidekiq]</category>
     <import>import sidekiq</import>
-    <make>sidekiq.sidekiq_tx($sample_rate, $attenuation, $frequency, $bandwidth, $sync, $suppress_tune_transients,
+    <make>sidekiq.sidekiq_tx($card, $sample_rate, $attenuation, $frequency, $bandwidth, $sync, $suppress_tune_transients,
         $dataflow_mode, $buffer_size, $filter_override_taps)
     </make>
     <callback>set_tx_sample_rate($sample_rate)</callback>
@@ -13,6 +13,12 @@
     <callback>set_tx_bandwidth($bandwidth)</callback>
     <callback>set_tx_suppress_tune_transients($suppress_tune_transients)</callback>
     <callback>set_tx_filter_override_taps($filter_override_taps)</callback>
+    <param>
+        <name>Card number</name>
+        <key>card</key>
+        <value>0</value>
+        <type>byte</type>
+    </param>
     <param>
         <name>Sample Rate</name>
         <key>sample_rate</key>

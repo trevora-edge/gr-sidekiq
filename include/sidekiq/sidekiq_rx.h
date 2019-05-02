@@ -38,6 +38,7 @@ namespace gr {
 			typedef boost::shared_ptr<sidekiq_rx> sptr;
 
 			static sptr make(
+					uint8_t card,
 					double sample_rate,
 					double gain,
 					uint8_t gain_mode,

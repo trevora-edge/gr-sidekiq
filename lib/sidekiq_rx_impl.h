@@ -31,6 +31,7 @@ namespace gr {
 		class sidekiq_rx_impl : public sidekiq_rx, sidekiq_rx_base {
 		public:
 			sidekiq_rx_impl(
+					uint8_t card,
 					double sample_rate,
 					double gain,
 					uint8_t gain_mode,

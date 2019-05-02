@@ -54,6 +54,7 @@ static const double STATUS_UPDATE_RATE_SECONDS{1.0};
 //#define DEBUG_1PPS_TIMESTAMP (1)
 
 sidekiq_rx::sptr sidekiq_rx::make(
+		uint8_t card,
 		double sample_rate,
 		double gain,
 		uint8_t gain_mode,
@@ -63,6 +64,7 @@ sidekiq_rx::sptr sidekiq_rx::make(
 		size_t num_items,
 		const std::vector<float> &taps) {
 	return boost::make_shared<sidekiq_rx_impl>(
+			card,
 			sample_rate,
 			gain,
 			gain_mode,
@@ -75,6 +77,7 @@ sidekiq_rx::sptr sidekiq_rx::make(
 }
 
 sidekiq_rx_impl::sidekiq_rx_impl(
+		uint8_t card,
 		double sample_rate,
 		double gain,
 		uint8_t gain_mode,
@@ -89,6 +92,7 @@ sidekiq_rx_impl::sidekiq_rx_impl(
 				gr::io_signature::make(1, 1, sizeof(gr_complex) * num_items)
 		},
 		sidekiq_rx_base{
+				card,
 				sync_type,
 				skiq_rx_hdl_A1,
 				gr::sidekiq::sidekiq_functions<skiq_rx_hdl_t>(

@@ -41,6 +41,7 @@ static const int16_t TX_FILTER_CONFIGURATION_REGISTER{0x0065};
 
 
 sidekiq_tx::sptr sidekiq_tx::make(
+		uint8_t card,
 		double sample_rate,
 		double attenuation,
 		double frequency,
@@ -52,6 +53,7 @@ sidekiq_tx::sptr sidekiq_tx::make(
 		const std::vector<float> &taps) {
 	return gnuradio::get_initial_sptr(
 			new sidekiq_tx_impl(
+					card,
 					sample_rate,
 					attenuation,
 					frequency,
@@ -65,6 +67,7 @@ sidekiq_tx::sptr sidekiq_tx::make(
 }
 
 sidekiq_tx_impl::sidekiq_tx_impl(
+		uint8_t card,
 		double sample_rate,
 		double attenuation,
 		double frequency,
@@ -79,6 +82,7 @@ sidekiq_tx_impl::sidekiq_tx_impl(
 		gr::io_signature::make(1, 1, sizeof(gr_complex)),
 		gr::io_signature::make(0, 0, 0)),
 		  sidekiq_tx_base{
+				  card,
 				  sync_type,
 				  skiq_tx_hdl_A1,
 				  gr::sidekiq::sidekiq_functions<skiq_tx_hdl_t>(
